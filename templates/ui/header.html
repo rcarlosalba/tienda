@@ -1,0 +1,81 @@
+{% load static %}
+
+<header class="bg-primary text-white" x-data="{ mobileMenuOpen: false }">
+    <div class="container mx-auto px-4 py-2 flex justify-between items-center">
+        <a href="{% url 'home' %}" class="flex-shrink-0">
+            <img src="{% static 'images/logo.png' %}" alt="Logo" class="h-20 w-auto">
+        </a>
+
+        <!-- Menú de escritorio -->
+        <nav class="hidden md:flex space-x-4 items-center">
+            <a href="{% url 'home' %}" class="hover:text-primary-light">Inicio</a>
+            <a href="{% url 'product_list' %}" class="hover:text-primary-light">Productos</a>
+            <a href="{% url 'category_list' %}" class="hover:text-primary-light">Categorías</a>
+            {% if user.is_authenticated %}
+                {% if user.is_staff or user.is_superuser %}
+                    {% include "ui/menus/header_owner.html" %}
+                {% else %}
+                    {% include "ui/menus/header_user.html" %}
+                {% endif %}
+            {% else %}
+                <a href="{% url 'login' %}" class="hover:text-primary-light">Acceder</a>
+                <a href="{% url 'register' %}" class="bg-accent text-white px-4 py-2 rounded-full hover:bg-accent-dark transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">Registrarse</a>
+            {% endif %}
+            <a href="{% url "contact" %}" class="hover:text-primary-light">Contáctanos</a>
+        </nav>
+
+        <!-- Botón de menú móvil -->
+        <button @click="mobileMenuOpen = true" class="md:hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Overlay para el menú móvil -->
+    <div 
+        x-show="mobileMenuOpen" 
+        @click="mobileMenuOpen = false" 
+        class="fixed inset-0 bg-black bg-opacity-50 z-40"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+    ></div>
+
+    <!-- Menú móvil -->
+    <nav 
+        x-show="mobileMenuOpen" 
+        class="fixed inset-y-0 right-0 max-w-xs w-full bg-primary z-50 overflow-y-auto"
+        x-transition:enter="transition ease-out duration-300 transform"
+        x-transition:enter-start="translate-x-full"
+        x-transition:enter-end="translate-x-0"
+        x-transition:leave="transition ease-in duration-300 transform"
+        x-transition:leave-start="translate-x-0"
+        x-transition:leave-end="translate-x-full"
+    >
+    <div class="p-5 h-full flex flex-col items-center">
+            <button @click="mobileMenuOpen = false" class="self-end mb-5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            <a href="{% url 'home' %}" class="block hover:text-primary-light text-white text-center py-3">Inicio</a>
+            <a href="{% url 'product_list' %}" class="block hover:text-primary-light text-white text-center py-3">Productos</a>
+            <a href="{% url 'category_list' %}" class="block hover:text-primary-light text-white text-center py-3">Categorías</a>
+            {% if user.is_authenticated %}
+                {% if user.is_staff or user.is_superuser %}
+                    {% include "ui/menus/header_owner_mobile.html" %}
+                {% else %}
+                    {% include "ui/menus/header_user_mobile.html" %}
+                {% endif %}
+                {% else %}
+                <a href="{% url 'login' %}" class="block hover:text-primary-light text-white text-center py-3">Acceder</a>
+                <a href="{% url 'register' %}" class="block bg-accent text-white px-6 py-2 rounded-full hover:bg-accent-dark transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg my-2">Registrarse</a>
+            {% endif %}
+            <a href="{% url "contact" %}" class="block hover:text-primary-light text-white text-center py-3">Contáctanos</a>
+        </div>
+    </nav>
+</header>

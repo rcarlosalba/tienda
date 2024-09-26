@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Detalle del Pedido #{{ order.id }}</h1>
+
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <h2 class="text-xl font-semibold mb-2">Información del Pedido</h2>
+                <p><strong>Usuario:</strong> {{ order.user.username }}</p>
+                <p><strong>Fecha:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                <p><strong>Total:</strong> Q {{ order.total_amount|floatformat:2 }}</p>
+                <p><strong>Estado actual:</strong> 
+                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                        {% elif order.status == 'paid' %}bg-green-100 text-green-800
+                        {% elif order.status == 'shipped' %}bg-blue-100 text-blue-800
+                        {% elif order.status == 'delivered' %}bg-purple-100 text-purple-800
+                        {% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ order.get_status_display }}
+                    </span>
+                </p>
+            </div>
+            <div>
+                <h2 class="text-xl font-semibold mb-2">Actualizar Estado</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        {{ form.status.label_tag }}
+                        {{ form.status }}
+                    </div>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Actualizar Estado
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <h2 class="text-xl font-semibold p-4 bg-gray-100">Productos en el Pedido</h2>
+        <table class="min-w-full">
+            <thead>
+                <tr>
+                    <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                    <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                    <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Precio Unitario</th>
+                    <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order_items %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <img class="h-10 w-10 rounded-full" src="{{ item.product.get_first_image_url }}" alt="{{ item.product.name }}">
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm leading-5 font-medium text-gray-900">{{ item.product.name }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                        <div class="text-sm leading-5 text-gray-900">{{ item.quantity }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                        <div class="text-sm leading-5 text-gray-900">Q {{ item.price|floatformat:2 }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                        <div class="text-sm leading-5 text-gray-900">Q {{ item.get_subtotal|floatformat:2 }}</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

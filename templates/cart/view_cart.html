@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load cart_tags %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Tu Carrito de Compras</h1>
+
+    {% if cart_items %}
+        {% include 'cart/_cart_items_desktop.html' %}
+        {% include 'cart/_cart_items_mobile.html' %}
+        {% include 'cart/_cart_summary.html' %}
+    {% else %}
+        <p class="text-lg">Tu carrito está vacío.</p>
+        <a href="{% url 'product_list' %}" class="mt-4 inline-block bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700">
+            Continuar Comprando
+        </a>
+    {% endif %}
+
+    {% include 'cart/_payment_modal.html' %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('paymentModal');
+        const openModalBtn = document.getElementById('openPaymentModal');
+        const cancelBtn = document.getElementById('cancelPayment');
+        const confirmBtn = document.getElementById('confirmPayment');
+        const paymentForm = document.getElementById('paymentForm');
+        const confirmText = document.getElementById('confirmText');
+        const processingSpinner = document.getElementById('processingSpinner');
+        const processingText = document.getElementById('processingText');
+    
+        function openModal() {
+            modal.classList.remove('hidden');
+        }
+    
+        function closeModal() {
+            modal.classList.add('hidden');
+            paymentForm.reset();
+            confirmBtn.disabled = false;
+            confirmText.classList.remove('hidden');
+            processingSpinner.classList.add('hidden');
+            processingText.classList.add('hidden');
+        }
+    
+        function submitPayment() {
+            const selectedMethod = paymentForm.querySelector('input[name="payment_method"]:checked');
+            if (!selectedMethod) return;
+    
+            confirmBtn.disabled = true;
+            confirmText.classList.add('hidden');
+            processingSpinner.classList.remove('hidden');
+            processingText.classList.remove('hidden');
+    
+            // Crear un objeto FormData con los datos del formulario
+            const formData = new FormData(paymentForm);
+            formData.append('metodoPago', selectedMethod.value);
+    
+            // Enviar los datos al servidor usando fetch
+            fetch('{% url "confirm_purchase" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Reemplazar el contenido de la página con la respuesta HTML
+                document.body.innerHTML = html;
+                // Desplazarse al inicio de la página
+                window.scrollTo(0, 0);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Hubo un error al procesar el pago. Por favor, inténtelo de nuevo.');
+            })
+            .finally(() => {
+                closeModal();
+            });
+        }
+    
+        openModalBtn.addEventListener('click', openModal);
+        cancelBtn.addEventListener('click', closeModal);
+        confirmBtn.addEventListener('click', submitPayment);
+    
+        // Cerrar modal al hacer clic fuera de él
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+    
+        // Habilitar/deshabilitar botón de confirmar según selección de método de pago
+        paymentForm.addEventListener('change', function() {
+            confirmBtn.disabled = !paymentForm.querySelector('input[name="payment_method"]:checked');
+        });
+    
+        // Vaciar carrito
+        document.getElementById('emptyCart').addEventListener('click', function(event) {
+            event.preventDefault();
+            if (confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
+                fetch('{% url "empty_cart" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Hubo un error al vaciar el carrito. Por favor, inténtelo de nuevo.');
+                });
+            }
+        });
+    });
+    </script>
+{% endblock %}

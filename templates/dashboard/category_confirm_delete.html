@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto mt-8 px-4">
+    <h2 class="text-2xl font-bold mb-4">Confirmar eliminación</h2>
+    <p class="mb-4">¿Estás seguro de que quieres eliminar la categoría "{{ category.name }}"?</p>
+    
+    <form method="post" class="inline">
+        {% csrf_token %}
+        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            Sí, eliminar
+        </button>
+    </form>
+    
+    <a href="{% url 'dashboard_category_list' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-block ml-2">
+        Cancelar
+    </a>
+</div>
+{% endblock %}

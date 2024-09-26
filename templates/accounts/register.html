@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load account_tags %}
+
+{% block content %}
+<div class="container mx-auto mt-8 px-4">
+    <h2 id="registro" class="text-2xl font-bold mb-4">Registro</h2>
+    
+    <form id="registerForm" method="post" class="space-y-4">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-4">
+                {{ field.label_tag }}
+                {{ field|add_class:"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" }}
+                {% if field.help_text %}
+                    <p class="text-sm text-gray-500 mt-1">{{ field.help_text }}</p>
+                {% endif %}
+                <p id="{{ field.id_for_label }}_error" class="mt-2 text-sm text-red-500 hidden"></p>
+                {% for error in field.errors %}
+                    <p class="text-red-500 text-xs italic">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+            <p class="font-bold">Nuestro compromiso con tu privacidad:</p>
+            <p>Tu seguridad y confianza son nuestra prioridad. Queremos que sepas que:</p>
+            <ul class="list-disc pl-5 mt-2">
+                <li>Nunca solicitaremos información sensible como números de tarjetas de crédito a través de este sitio.</li>
+                <li>Todos los pagos con tarjeta se realizan a través de enlaces seguros y encriptados.</li>
+                <li>Protegemos tu información personal con el mismo cuidado que protegemos la nuestra.</li>
+                <li>No compartiremos tus datos con terceros sin tu consentimiento explícito.</li>
+                <li>Nos comprometemos a no enviar spam ni correos no solicitados.</li>
+            </ul>
+            <p class="mt-2">Al registrarte, aceptas nuestra política de privacidad y términos de servicio.</p>
+        </div>
+
+        <div class="flex items-center justify-between">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Registrarse
+            </button>
+        </div>
+    </form>
+</div>
+
+<div id="errorMessage" class="fixed top-0 left-0 right-0 bg-red-500 text-white p-4 text-center transform -translate-y-full transition-transform duration-300 ease-in-out">
+    Por favor, corrige los errores en el formulario.
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+    const fields = form.querySelectorAll('input, textarea, select');
+
+    function validateField(field) {
+        const errorElement = document.getElementById(`${field.id}_error`);
+        let isValid = true;
+        let errorMessage = '';
+
+        if (field.required && field.value.trim() === '') {
+            isValid = false;
+            errorMessage = 'Este campo es obligatorio.';
+        } else {
+            switch (field.name) {
+                case 'username':
+                    if (field.value.trim().length < 8) {
+                        isValid = false;
+                        errorMessage = 'El nombre de usuario debe tener al menos 8 caracteres.';
+                    }
+                    break;
+                case 'email':
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(field.value.trim())) {
+                        isValid = false;
+                        errorMessage = 'Por favor, introduce un correo electrónico válido.';
+                    }
+                    break;
+                case 'phone':
+                case 'contact_phone':
+                    const phoneRegex = /^(\+502)?[1-9]\d{7}$/;
+                    if (!phoneRegex.test(field.value.trim())) {
+                        isValid = false;
+                        errorMessage = 'Por favor, introduce un número de teléfono válido de Guatemala (+502 opcional, seguido de 8 dígitos).';
+                    }
+                    break;
+                case 'password1':
+                case 'password2':
+                    const password1 = form.querySelector('input[name="password1"]').value;
+                    const password2 = form.querySelector('input[name="password2"]').value;
+                    if (password1 !== password2) {
+                        isValid = false;
+                        errorMessage = 'Las contraseñas no coinciden.';
+                    } else if (password1.length < 8) {
+                        isValid = false;
+                        errorMessage = 'La contraseña debe tener al menos 8 caracteres.';
+                    }
+                    break;
+            }
+        }
+
+        if (!isValid) {
+            errorElement.textContent = errorMessage;
+            errorElement.classList.remove('hidden');
+        } else {
+            errorElement.textContent = '';
+            errorElement.classList.add('hidden');
+        }
+
+        return isValid;
+    }
+
+    fields.forEach(field => {
+        field.addEventListener('input', () => validateField(field));
+    });
+
+    form.addEventListener('submit', function(event) {
+        let isFormValid = true;
+        fields.forEach(field => {
+            if (!validateField(field)) {
+                isFormValid = false;
+            }
+        });
+
+        if (!isFormValid) {
+            event.preventDefault();
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.transform = 'translateY(0)';
+            setTimeout(() => {
+                errorMessage.style.transform = 'translateY(-100%)';
+            }, 3000);
+        }
+    });
+});
+</script>
+{% endblock %}

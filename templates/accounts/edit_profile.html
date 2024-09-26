@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load account_tags %}
+{% block content %}
+<div class="container mx-auto mt-8 px-4">
+    <h2 class="text-2xl font-bold mb-4">Editar Perfil</h2>
+    
+    <form method="post" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ field.id_for_label }}">
+                {{ field.label }}
+            </label>
+            {{ field|add_class:"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" }}
+            {% if field.help_text %}
+            <p class="text-gray-600 text-xs italic mt-1">{{ field.help_text }}</p>
+            {% endif %}
+            {% for error in field.errors %}
+            <p class="text-red-500 text-xs italic mt-1">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endfor %}
+        
+        <div class="flex items-center justify-between">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                Guardar Cambios
+            </button>
+        </div>
+    </form>
+</div>
+
+<div id="errorMessage" class="fixed top-0 left-0 right-0 bg-red-500 text-white p-4 text-center transform -translate-y-full transition-transform duration-300 ease-in-out">
+    Por favor, corrige los errores en el formulario.
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // JavaScript para manejar la visualización de mensajes de error
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const errorMessage = document.getElementById('errorMessage');
+
+        form.addEventListener('submit', function(event) {
+            const invalidFields = form.querySelectorAll(':invalid');
+            if (invalidFields.length > 0) {
+                event.preventDefault();
+                errorMessage.style.transform = 'translateY(0)';
+                setTimeout(() => {
+                    errorMessage.style.transform = 'translateY(-100%)';
+                }, 3000);
+            }
+        });
+    });
+</script>
+{% endblock %}

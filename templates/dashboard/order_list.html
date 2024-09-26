@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mx-auto px-4">
+    <h1 class="text-2xl font-bold mb-4">Gestión de Pedidos</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-2">Total de Pedidos</h2>
+            <p>{{ total_orders }}</p>
+        </div>
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-2">Ingresos Totales</h2>
+            <p>Q {{ total_revenue|floatformat:2 }}</p>
+        </div>
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-2">Pedidos Pendientes</h2>
+            <p>{{ pending_orders }}</p>
+        </div>
+    </div>
+
+    <!-- Vista de tabla para pantallas medianas y grandes -->
+    <div class="hidden md:block">
+        <table class="min-w-full bg-white shadow-md rounded my-6">
+            <thead>
+                <tr>
+                    <th class="py-3 px-6 bg-grey-lighter text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider">ID</th>
+                    <th class="py-3 px-6 bg-grey-lighter text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider">Usuario</th>
+                    <th class="py-3 px-6 bg-grey-lighter text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider">Fecha</th>
+                    <th class="py-3 px-6 bg-grey-lighter text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider">Total</th>
+                    <th class="py-3 px-6 bg-grey-lighter text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider">Estado</th>
+                    <th class="py-3 px-6 bg-grey-lighter text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td class="py-4 px-6 border-b border-grey-light">{{ order.id }}</td>
+                    <td class="py-4 px-6 border-b border-grey-light">{{ order.user.username }}</td>
+                    <td class="py-4 px-6 border-b border-grey-light">{{ order.created_at|date:"d/m/Y H:i" }}</td>
+                    <td class="py-4 px-6 border-b border-grey-light">Q {{ order.total_amount }}</td>
+                    <td class="py-4 px-6 border-b border-grey-light">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                        {% elif order.status == 'paid' %}bg-green-100 text-green-800
+                        {% elif order.status == 'shipped' %}bg-blue-100 text-blue-800
+                        {% elif order.status == 'delivered' %}bg-purple-100 text-purple-800
+                        {% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="py-4 px-6 border-b border-grey-light">
+                        <a href="{% url 'dashboard_order_detail' order.id %}" class="text-blue-600 hover:text-blue-900">Ver detalles</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Vista de tarjetas para dispositivos móviles -->
+    <div class="md:hidden">
+        {% for order in orders %}
+        <div class="bg-white shadow rounded-lg mb-4 p-4">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-semibold">Pedido #{{ order.id }}</span>
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                {% elif order.status == 'paid' %}bg-green-100 text-green-800
+                {% elif order.status == 'shipped' %}bg-blue-100 text-blue-800
+                {% elif order.status == 'delivered' %}bg-purple-100 text-purple-800
+                {% else %}bg-red-100 text-red-800{% endif %}">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+            <p class="text-sm text-gray-600">Usuario: {{ order.user.username }}</p>
+            <p class="text-sm text-gray-600">Fecha: {{ order.created_at|date:"d/m/Y H:i" }}</p>
+            <p class="text-sm text-gray-600">Total: Q {{ order.total_amount }}</p>
+            <a href="{% url 'dashboard_order_detail' order.id %}" class="mt-2 inline-block text-blue-600 hover:text-blue-900">Ver detalles</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

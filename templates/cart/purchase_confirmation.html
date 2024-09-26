@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Gracias por tu compra</h1>
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-xl font-semibold mb-4">Resumen de tu pedido:</h2>
+
+        {% for item in cart_items %}
+        <div class="mb-2">
+            <span class="font-medium">{{ item.product.name }}</span> - Cantidad: {{ item.quantity }}
+        </div>
+        {% endfor %}
+
+        <div class="mt-4">
+            <p class="text-lg font-bold">Total: Q {{ total_price }}</p>
+            <p class="mt-2">Método de pago seleccionado: {{ metodo_pago }}</p>
+        </div>
+
+        <p class="mt-6">Pronto estaremos en contacto contigo para confirmar los detalles de tu pedido.</p>
+    </div>
+
+    <a href="{% url 'home' %}" class="mt-8 inline-block bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-700">
+        Volver a la página principal
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex flex-wrap -mx-4 mb-8">
+        <div class="w-full md:w-1/2 px-4 mb-8 md:mb-0">
+            <div class="relative">
+                {% if product.images.all %}
+                    <img id="main-image" src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-96 object-cover rounded-lg shadow-md">
+                    <div class="mt-4 flex space-x-2 overflow-x-auto">
+                        {% for image in product.images.all %}
+                            <img src="{{ image.image.url }}" alt="{{ product.name }}" class="w-24 h-24 object-cover rounded-md cursor-pointer hover:opacity-75 transition duration-300" onclick="changeMainImage('{{ image.image.url }}')">
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="w-full h-96 bg-gray-200 flex items-center justify-center rounded-lg">
+                        <span class="text-gray-500">Sin imagen</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="w-full md:w-1/2 px-4">
+            <h1 class="text-3xl font-bold mb-4">{{ product.name }}</h1>
+            <p class="text-gray-600 mb-4">{{ product.description }}</p>
+            <p class="text-2xl font-bold text-primary mb-4">Q{{ product.price }}</p>
+            <p class="text-gray-700 mb-4">
+                <span class="font-semibold">Código:</span> {{ product.code }}
+            </p>
+            <p class="text-gray-700 mb-4">
+                <span class="font-semibold">Categoría:</span> 
+                <a href="{% url 'category_detail' product.category.id %}" class="text-primary hover:underline">
+                    {{ product.category.name }}
+                </a>
+            </p>
+            <p class="text-gray-700 mb-6">
+                <span class="font-semibold">Stock:</span> 
+                {% if product.stock > 5 %}
+                    <span class="text-green-600">{{ product.stock }} unidades disponibles</span>
+                {% elif product.stock > 0 %}
+                    <span class="text-yellow-600">¡Solo quedan {{ product.stock }} unidades!</span>
+                {% else %}
+                    <span class="text-red-600">Agotado</span>
+                {% endif %}
+            </p>
+            <form method="post" action="{% url 'add_to_cart' product.id %}">
+                {% csrf_token %}
+                <button type="submit" class="bg-primary text-white py-2 px-6 rounded-lg hover:bg-primary-dark transition duration-300 {% if product.stock == 0 %}opacity-50 cursor-not-allowed{% endif %}" {% if product.stock == 0 %}disabled{% endif %}>
+                    Agregar al carrito
+                </button>
+            </form>
+        </div>
+    </div>
+    {% if related_products %}
+    <div class="mt-12">
+        <h2 class="text-2xl font-bold mb-6">Productos relacionados</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for related_product in related_products %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    {% if related_product.images.first %}
+                        <img src="{{ related_product.images.first.image.url }}" alt="{{ related_product.name }}" class="w-full h-48 object-cover">
+                    {% else %}
+                        <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                            <span class="text-gray-500">Sin imagen</span>
+                        </div>
+                    {% endif %}
+                    <div class="p-4">
+                        <h3 class="text-lg font-semibold mb-2">{{ related_product.name }}</h3>
+                        <p class="text-gray-600 mb-2">{{ related_product.description|truncatewords:10 }}</p>
+                        <p class="text-lg font-bold text-primary">Q{{ related_product.price }}</p>
+                        <a href="{% url 'product_detail' related_product.id %}" class="mt-2 inline-block bg-primary text-white py-1 px-3 rounded text-sm hover:bg-primary-dark transition duration-300">Ver detalles</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function changeMainImage(imageUrl) {
+        document.getElementById('main-image').src = url;
+    }
+</script>
+{% endblock %}

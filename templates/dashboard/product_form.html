@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto mt-8 px-4">
+    <h2 class="text-2xl font-bold mb-4">{% if product %}Editar{% else %}Crear{% endif %} Producto</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-4">
+                <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-2">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.help_text %}
+                    <p class="text-gray-600 text-xs italic">{{ field.help_text }}</p>
+                {% endif %}
+                {% for error in field.errors %}
+                    <p class="text-red-500 text-xs italic">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        
+        {% if product %}
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold mb-2">Imágenes actuales</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {% for image in product.images.all %}
+                        <div class="relative">
+                            <img src="{{ image.image.url }}" alt="{{ product.name }}" class="w-full h-32 object-cover rounded">
+                            <button type="button" class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 m-1" onclick="deleteImage({{ image.id }})">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        
+        <div class="flex items-center justify-between">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                {% if product %}Actualizar{% else %}Crear{% endif %} Producto
+            </button>
+            <a href="{% url 'dashboard_product_list' %}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+<div id="errorMessage" class="fixed top-0 left-0 right-0 bg-red-500 text-white p-4 text-center transform -translate-y-full transition-transform duration-300 ease-in-out">
+    Por favor, corrige los errores en el formulario.
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const errorMessage = document.getElementById('errorMessage');
+
+    form.addEventListener('submit', function(e) {
+        const hasErrors = Array.from(form.querySelectorAll('.text-red-500')).length > 0;
+        if (hasErrors) {
+            e.preventDefault();
+            errorMessage.style.transform = 'translateY(0)';
+            setTimeout(() => {
+                errorMessage.style.transform = 'translateY(-100%)';
+            }, 3000);
+        }
+    });
+});
+function deleteImage(imageId) {
+    if (confirm('¿Estás seguro de que quieres eliminar esta imagen?')) {
+        fetch(`/dashboard/delete-product-image/${imageId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Hubo un error al eliminar la imagen.');
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

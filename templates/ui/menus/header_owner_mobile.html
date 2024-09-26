@@ -1,0 +1,15 @@
+<div x-data="{ dashboardMenuOpen: false }">
+    <button @click="dashboardMenuOpen = !dashboardMenuOpen" class="flex items-center justify-center w-full hover:text-primary-light text-white text-center py-3">
+        <span>Panel</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 transition-transform duration-200" :class="{'rotate-180': dashboardMenuOpen}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+    </button>
+    <div x-show="dashboardMenuOpen" class="w-full">
+        <a href="{% url 'dashboard_home' %}" class="block hover:text-primary-light text-white text-center py-2">Dashboard Home</a>
+        <a href="{% url 'dashboard_product_list' %}" class="block hover:text-primary-light text-white text-center py-2">Gestionar Productos</a>
+        <a href="{% url "dashboard_category_list" %}" class="block hover:text-primary-light text-white text-center py-2">Gestionar Categorías</a>
+        <a href="{% url 'dashboard_order_list' %}" class="block hover:text-primary-light text-white text-center py-2">Gestionar Pedidos</a>
+    </div>
+</div>
+<a href="{% url 'logout' %}" class="block hover:text-primary-light text-white text-center py-3">Cerrar Sesión</a>
